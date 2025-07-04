@@ -1,0 +1,38 @@
+trigger:
+  - main
+
+pool:
+  name: Default  # Your self-hosted agent pool
+
+stages:
+  - stage: Build
+    jobs:
+      - job: BuildDockerImages
+        steps:
+          - task: Docker@2
+            displayName: Build & Push Vote App
+            inputs:
+              command: buildAndPush
+              repository: vote
+              dockerfile: vote/Dockerfile
+              containerRegistry: dockerconnect  # ✅ Use your actual service connection name
+              tags: latest
+
+          - task: Docker@2
+            displayName: Build & Push Worker App
+            inputs:
+              command: buildAndPush
+              repository: worker
+              dockerfile: worker/Dockerfile
+              containerRegistry: dockerconnect
+              tags: latest
+
+          - task: Docker@2
+            displayName: Build & Push Result App
+            inputs:
+              command: buildAndPush
+              repository: result
+              dockerfile: result/Dockerfile
+              containerRegistry: dockerconnect
+              tags: latest
+
