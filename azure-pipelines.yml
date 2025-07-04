@@ -1,29 +1,42 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
-
 trigger:
 - main
 
-resources:
-- repo: self
-
+pool:Default
+  
 variables:
-  tag: '$(Build.BuildId)'
+  ACR_NAME: 'zainvotingacr123.azurecr.io'  # your ACR login server
 
 stages:
-- stage: Build
-  displayName: Build image
+- stage: BuildAndPush
+  displayName: Build and Push Docker Images
   jobs:
-  - job: Build
-    displayName: Build
-    pool:
-      vmImage: ubuntu-latest
+  - job: DockerBuild
+    displayName: Build and Push All Services
     steps:
     - task: Docker@2
-      displayName: Build an image
+      displayName: Build & Push Vote App
       inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/result/Dockerfile'
-        tags: |
-          $(tag)
+        command: buildAndPush
+        repository: vote
+        dockerfile: vote/Dockerfile
+        containerRegistry: 'acr-zainvoting'
+        tags: latest
+
+    - task: Docker@2
+      displayName: Build & Push Worker
+      inputs:
+        command: buildAndPush
+        repository: worker
+        dockerfile: worker/Dockerfile
+        containerRegistry: 'acr-zainvoting'
+        tags: latest
+
+    - task: Docker@2
+      displayName: Build & Push Result App
+      inputs:
+        command: buildAndPush
+        repository: result
+        dockerfile: result/Dockerfile
+        containerRegistry: 'acr-zainvoting'
+        tags: latest
+
